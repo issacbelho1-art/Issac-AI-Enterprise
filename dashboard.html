@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISSAC AI | Enterprise Live Hub</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white font-sans">
+
+    <nav class="p-6 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-500">ISSAC AI <span class="text-white text-sm font-light uppercase tracking-widest ml-4 hidden md:inline">Live Inventory Stream</span></h1>
+            <div class="flex items-center space-x-2 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span class="text-emerald-500 text-[10px] font-bold uppercase tracking-tighter">System Live</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto p-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-center">
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <p class="text-slate-400 text-xs uppercase">Node Location</p>
+                <p class="text-lg font-bold">Dimapur, IN</p>
+            </div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <p class="text-slate-400 text-xs uppercase">Cloud Server</p>
+                <p class="text-lg font-bold text-blue-400">Singapore</p>
+            </div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <p class="text-slate-400 text-xs uppercase">Status</p>
+                <p class="text-lg font-bold text-emerald-400">Receiving...</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-700 bg-slate-800/50">
+                <h2 class="text-lg font-semibold flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    Real-Time Cloud Logs
+                </h2>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Item Type</th>
+                            <th class="px-6 py-4">Serial Number</th>
+                            <th class="px-6 py-4">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-700">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div id="empty-state" class="p-20 text-center text-slate-500">
+                <p>Waiting for the first scan from Issac's AI...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- YOUR VERIFIED CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNDH0UHx77QW5CvMqvvqCEEmavVR46Wa8",
+            authDomain: "issac-ai-enterprise.firebaseapp.com",
+            databaseURL: "https://issac-ai-enterprise-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "issac-ai-enterprise",
+            storageBucket: "issac-ai-enterprise.firebasestorage.app",
+            messagingSenderId: "1054120628613",
+            appId: "1:1054120628613:web:cf56063719b45b33b9b4ec"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Reference to our scan logs
+        const logRef = database.ref('inventory_logs');
+        
+        // Listen for new entries
+        logRef.on('child_added', (snapshot) => {
+            // Hide the "Waiting" message
+            document.getElementById('empty-state').classList.add('hidden');
+            
+            const data = snapshot.val();
+            const tableBody = document.getElementById('table-body');
+            
+            // Create the new row
+            const row = `
+                <tr class="hover:bg-slate-700/50 transition-all border-l-4 border-transparent hover:border-blue-500 animate-in fade-in duration-500">
+                    <td class="px-6 py-4">
+                        <span class="bg-blue-500/10 text-blue-400 text-[10px] px-2 py-1 rounded font-bold border border-blue-500/20">SYNCED</span>
+                    </td>
+                    <td class="px-6 py-4 font-bold text-white tracking-tight">${data.item_type}</td>
+                    <td class="px-6 py-4 text-slate-300 font-mono text-sm">${data.serial_number || '---'}</td>
+                    <td class="px-6 py-4 text-slate-500 text-xs">${data.timestamp}</td>
+                </tr>
+            `;
+            
+            // Insert at the top so newest scans are first
+            tableBody.insertAdjacentHTML('afterbegin', row);
+        });
+    </script>
+</body>
+</html>
